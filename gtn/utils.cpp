@@ -234,7 +234,8 @@ void saveTxtImpl(std::ostream& out, const Graph& g, bool limitOutput) {
       break;
     }
     if (i > 0) {
-      out << " ";
+      // out << " ";
+      out << "\n";
     }
     out << g.accept()[i];
   }

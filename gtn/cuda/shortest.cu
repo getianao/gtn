@@ -350,7 +350,7 @@ Graph shortestDistance(const Graph& g, bool tropical) {
   HDSpan<int> numToExplore(1, 0, Device::CUDA);
 
   thrust::fill(
-      thrust::device,
+      
       maxes.begin(),
       maxes.end(),
       ArgMaxT{-std::numeric_limits<float>::infinity(), -1});

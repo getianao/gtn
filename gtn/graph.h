@@ -20,7 +20,7 @@
 namespace gtn {
 
 /** The index of the epsilon label. */
-constexpr int epsilon{-1};
+constexpr int epsilon{0};
 
 /**
  * A `Graph` class to perform automatic differentiation with weighted

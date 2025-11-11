@@ -223,7 +223,8 @@ int* calculateArcCrossProductOffset(
         g1.outArcOffset, g2.outArcOffset, exploreIndices,
         arcCrossProductOffset, g1.numNodes);
   }
-
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaGetLastError()); 
   return arcCrossProductOffset;
 }
 
@@ -636,6 +637,8 @@ void findReachableInit(
   auto threads = dim3(NT, NT);
   findReachableInitKernel<<<blocks, threads>>>(g1.acceptIds, g2.acceptIds,
     reachable, toExplore, g1.numNodes);
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaGetLastError()); 
 }
 
 __global__
@@ -671,6 +674,8 @@ void secondPassInit(
   auto threads = dim3(NT, NT);
   secondPassInitKernel<<<blocks, threads>>>(g1.startIds, g2.startIds,
     reachable, toExplore, newNodes, g1.numNodes);
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaGetLastError()); 
 }
 
 __global__
@@ -696,6 +701,8 @@ void calcGrad(Graph& g, int* arcIds, const Graph& deltas) {
   const int gridSize = divUp(deltas.numArcs(), NT);
   gradKernel<<<gridSize, NT, 0, 0>>>(
       arcIds, deltas.weights(), grad.data(), deltas.numArcs());
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaGetLastError()); 
   g.addGrad(grad.data());
   grad.clear();
 }
@@ -719,6 +726,8 @@ auto boolToIndices(const HDSpan<bool>& vals) {
 
   HDSpan<int> ids(numTrue, Device::CUDA);
   boolToIndicesKernel<<<gridSize, NT, 0, 0>>>(ids, counts, vals, vals.size());
+  CUDA_CHECK(cudaDeviceSynchronize());
+  CUDA_CHECK(cudaGetLastError());    
   CUDA_CHECK(cudaFree(counts));
   return ids;
 }
@@ -773,6 +782,8 @@ Graph compose(const Graph& first, const Graph& second) {
       findReachableKernel<<<gridSize, NT, 0, 0>>>(
           g1, g2, arcCrossProductOffset, exploreIndices,
           totalArcs, toExplore, reachable);
+      CUDA_CHECK(cudaDeviceSynchronize());
+      CUDA_CHECK(cudaGetLastError());
     }
 
     exploreIndices.clear();
@@ -827,6 +838,8 @@ Graph compose(const Graph& first, const Graph& second) {
       computeValidNodeAndArcKernel<<<gridSize, NT, 0, 0>>>(g1, g2,
         arcCrossProductOffset, exploreIndices, reachable, totalArcs,
         toExplore, newNodes, numInArcs, numOutArcs);
+      CUDA_CHECK(cudaDeviceSynchronize());
+      CUDA_CHECK(cudaGetLastError());
     }
 
     exploreIndices.clear();
@@ -859,6 +872,8 @@ Graph compose(const Graph& first, const Graph& second) {
 
     calculateNumArcsKernel<<<gridSize, NT, 0, 0>>>(exploreIndices,
       numInArcs, numOutArcs, nData.inArcOffset, nData.outArcOffset);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError());
   }
   CUDA_CHECK(cudaFree(numOutArcs));
   CUDA_CHECK(cudaFree(numInArcs));
@@ -908,6 +923,8 @@ Graph compose(const Graph& first, const Graph& second) {
 
     const int gridSize = divUp(exploreIndices.size(), NT);
     setStartAndAccept<<<gridSize, NT, 0, 0>>>(g1, g2, exploreIndices, nData);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError());
     nData.startIds = boolToIndices(nData.start);
     nData.acceptIds = boolToIndices(nData.accept);
   }
@@ -917,6 +934,8 @@ Graph compose(const Graph& first, const Graph& second) {
     generateNodeAndArcKernel<<<gridSize, NT, 0, 0>>>(g1, g2,
         first.weights(), second.weights(), arcCrossProductOffset, exploreIndices, newNodes,
         totalArcs, nData, nGraph.weights(), gradInfo->first, gradInfo->second, newNodesOffset);
+    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaGetLastError());
   }
 
   exploreIndices.clear();
