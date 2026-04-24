@@ -46,6 +46,23 @@ PYBIND11_MODULE(graph, m) {
       .def("num_nodes", &Graph::numNodes)
       .def("num_start", &Graph::numStart)
       .def("num_accept", &Graph::numAccept)
+      .def(
+          "start_nodes",
+          [](const Graph& g) {
+            const auto& start = g.start();
+            return std::vector<int>(start.begin(), start.end());
+          })
+      .def(
+          "accept_nodes",
+          [](const Graph& g) {
+            const auto& accept = g.accept();
+            return std::vector<int>(accept.begin(), accept.end());
+          })
+      .def("src_node", &Graph::srcNode, "arc"_a)
+      .def("dst_node", &Graph::dstNode, "arc"_a)
+      .def("ilabel", &Graph::ilabel, "arc"_a)
+      .def("olabel", &Graph::olabel, "arc"_a)
+      .def("weight", &Graph::weight, "arc"_a)
       .def("cpu", &Graph::cpu)
       .def("cuda", (Graph (Graph::*)() const) &Graph::cuda)
       .def("cuda", (Graph (Graph::*)(const Device&) const) &Graph::cuda, "device"_a)
